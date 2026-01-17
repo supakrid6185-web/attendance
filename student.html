@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คชื่อเข้าชั้นเรียน - นักเรียน</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 ระบบเช็คชื่อเข้าชั้นเรียน</h1>
+            <p class="subtitle">สำหรับนักเรียน</p>
+            <p class="date-time" id="dateTime"></p>
+        </div>
+
+        <!-- ปุ่มสลับโหมด -->
+        <div class="card">
+            <div class="mode-switch">
+                <button id="checkInModeBtn" class="mode-btn active">✓ เช็คชื่อ</button>
+                <button id="registerModeBtn" class="mode-btn">📝 ลงทะเบียน</button>
+            </div>
+        </div>
+
+        <!-- โหมดเช็คชื่อ -->
+        <div id="checkInMode">
+            <div class="card">
+                <h2>เลือกบทเรียน</h2>
+                <select id="lessonSelect" required>
+                    <option value="">-- เลือกบทเรียน --</option>
+                    <option value="lesson1">บทที่ 1: HTML พื้นฐาน</option>
+                    <option value="lesson2">บทที่ 2: CSS Styling</option>
+                    <option value="lesson3">บทที่ 3: JavaScript</option>
+                    <option value="lesson4">บทที่ 4: Responsive Design</option>
+                    <option value="lesson5">บทที่ 5: Web Development</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h2>กรอกรหัสนักเรียน</h2>
+                <form id="checkInForm">
+                    <input 
+                        type="text" 
+                        id="studentId" 
+                        placeholder="กรอกรหัสนักเรียน (เช่น 65001)" 
+                        required 
+                        autofocus
+                        autocomplete="off"
+                    >
+                    <button type="submit">✓ เช็คชื่อ</button>
+                </form>
+                
+                <div id="message" class="message"></div>
+            </div>
+        </div>
+
+        <!-- โหมดลงทะเบียน -->
+        <div id="registerMode" style="display: none;">
+            <div class="card">
+                <h2>📝 ลงทะเบียนนักเรียน</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>รหัสนักเรียน *</label>
+                        <input type="text" id="regStudentId" placeholder="เช่น 65001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อ *</label>
+                        <input type="text" id="regFirstName" placeholder="ชื่อจริง" required>
+                    </div>
+                    <div class="form-group">
+                        <label>นามสกุล *</label>
+                        <input type="text" id="regLastName" placeholder="นามสกุล" required>
+                    </div>
+                    <div class="form-group">
+                        <label>อีเมล</label>
+                        <input type="email" id="regEmail" placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>เบอร์โทร</label>
+                        <input type="tel" id="regPhone" placeholder="0812345678">
+                    </div>
+                    <div class="form-group">
+                        <label>ชั้นเรียน / สาขา *</label>
+                        <select id="regClass" class="class-select" required>
+                            <!-- Options จะถูกเติมโดย JavaScript -->
+                        </select>
+                    </div>
+                    <button type="submit" class="register-btn">💾 บันทึกข้อมูล</button>
+                </form>
+                <div id="registerMessage" class="message"></div>
+            </div>
+        </div>
+
+        <div class="card footer-info">
+            <p>💡 <strong>หมายเหตุ:</strong> ถ้ายังไม่ได้ลงทะเบียน กรุณาลงทะเบียนก่อนเช็คชื่อ</p>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="common.js"></script>
+    <script src="student.js"></script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อ - ครู</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👨‍🏫 ระบบจัดการเช็คชื่อ</h1>
+            <p class="subtitle">สำหรับครู</p>
+            <p class="date-time" id="dateTime"></p>
+        </div>
+
+        <!-- ปุ่มสลับโหมด -->
+        <div class="card">
+            <div class="mode-switch">
+                <button id="attendanceModeBtn" class="mode-btn active">📊 รายการเช็คชื่อ</button>
+                <button id="studentListModeBtn" class="mode-btn">👥 รายชื่อนักเรียน</button>
+                <button id="qrModeBtn" class="mode-btn">📱 QR Code</button>
+            </div>
+        </div>
+
+        <!-- โหมดรายการเช็คชื่อ -->
+        <div id="attendanceMode">
+            <div class="card">
+                <div class="header-row">
+                    <h2>📊 รายชื่อที่เช็คชื่อแล้ว</h2>
+                    <button id="exportBtn" class="export-btn">📥 Export CSV</button>
+                </div>
+                <div class="lesson-filter">
+                    <label>กรองตามบทเรียน:</label>
+                    <select id="filterLesson">
+                        <option value="all">ทุกบทเรียน</option>
+                        <option value="lesson1">บทที่ 1</option>
+                        <option value="lesson2">บทที่ 2</option>
+                        <option value="lesson3">บทที่ 3</option>
+                        <option value="lesson4">บทที่ 4</option>
+                        <option value="lesson5">บทที่ 5</option>
+                    </select>
+                </div>
+                <div class="lesson-filter">
+                    <label>กรองตามวันที่:</label>
+                    <select id="filterDate">
+                        <option value="today">วันนี้</option>
+                        <option value="all">ทุกวัน</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <span>จำนวน: <strong id="totalCount">0</strong> รายการ</span>
+                </div>
+                <div class="table-container">
+                    <table id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>รหัสนักเรียน</th>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th>ชั้นเรียน</th>
+                                <th>บทเรียน</th>
+                                <th>วันที่</th>
+                                <th>เวลา</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceList">
+                            <tr>
+                                <td colspan="7" class="empty">ยังไม่มีข้อมูล</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- โหมดรายชื่อนักเรียน -->
+        <div id="studentListMode" style="display: none;">
+            <div class="card">
+                <div class="header-row">
+                    <h2>👥 รายชื่อนักเรียนทั้งหมด</h2>
+                    <button id="exportStudentsBtn" class="export-btn">📥 Export นักเรียน</button>
+                </div>
+                <div class="stats">
+                    <span>จำนวนนักเรียน: <strong id="studentTotalCount">0</strong> คน</span>
+                </div>
+                <div class="table-container">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>รหัส</th>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th>ชั้นเรียน</th>
+                                <th>อีเมล</th>
+                                <th>เบอร์โทร</th>
+                                <th style="width: 150px;">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentListBody">
+                            <tr>
+                                <td colspan="7" class="empty">ยังไม่มีนักเรียนลงทะเบียน</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- โหมด QR Code -->
+        <div id="qrMode" style="display: none;">
+            <div class="card">
+                <h2>📱 QR Code สำหรับนักเรียน</h2>
+                <p class="qr-description">ให้นักเรียนสแกน QR Code นี้เพื่อเข้าสู่ระบบเช็คชื่อ</p>
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="url-display">
+                    <input type="text" id="currentUrl" readonly>
+                    <button id="copyUrlBtn" class="copy-btn">📋 คัดลอก</button>
+                </div>
+                <button id="downloadQrBtn" class="download-btn">💾 ดาวน์โหลด QR Code</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <button id="clearBtn" class="clear-btn">🗑️ ล้างข้อมูลทั้งหมด</button>
+        </div>
+    </div>
+
+    <!-- Modal แก้ไขข้อมูลนักเรียน -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ แก้ไขข้อมูลนักเรียน</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    <div class="form-group">
+                        <label>รหัสนักเรียน (ไม่สามารถแก้ไขได้)</label>
+                        <input type="text" id="editStudentId" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อ *</label>
+                        <input type="text" id="editFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>นามสกุล *</label>
+                        <input type="text" id="editLastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>อีเมล</label>
+                        <input type="email" id="editEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>เบอร์โทร</label>
+                        <input type="tel" id="editPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>ชั้นเรียน / สาขา *</label>
+                        <select id="editClass" class="class-select" required>
+                            <!-- Options จะถูกเติมโดย JavaScript -->
+                        </select>
+                    </div>
+                    <button type="submit" class="register-btn">💾 บันทึกการแก้ไข</button>
+                </form>
+                <div id="editMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="common.js"></script>
+    <script src="teacher.js"></script>
+</body>
+</html>
