@@ -1,16 +1,4 @@
 {
   "version": 2,
-  "name": "attendance-system",
-  "builds": [
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/student.html"
-    }
-  ]
+  "name": "attendance-system"
 }
